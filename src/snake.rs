@@ -1,5 +1,6 @@
 use crate::block::Block;
 
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Direction {
     Up,
     Down,
@@ -7,20 +8,35 @@ pub enum Direction {
     Right,
 }
 
+impl Direction {
+    pub fn opposite(&self) -> Direction {
+        match self {
+            Direction::Up => Direction::Down,
+            Direction::Down => Direction::Up,
+            Direction::Left => Direction::Right,
+            Direction::Right => Direction::Left,
+        }
+    }
+}
+
 pub struct Snake {
     pub body: Vec<Block>,
     pub direction: Direction,
+    pub last_direction: Direction,
+    grow: bool,
 }
 
 impl Snake {
-    pub fn new() -> Self {
+    pub fn new(x: i32, y: i32) -> Self {
         Self {
             body: vec![
-                Block { x: 5, y: 5 },
-                Block { x: 4, y: 5 },
-                Block { x: 3, y: 5 },
+                Block { x, y },
+                Block { x: x - 1, y },
+                Block { x: x - 2, y },
             ],
             direction: Direction::Right,
+            last_direction: Direction::Right,
+            grow: false,
         }
     }
 
@@ -38,12 +54,24 @@ impl Snake {
             Direction::Right => new_head.x += 1,
         }
 
+        self.last_direction = self.direction;
+
         self.body.insert(0, new_head);
 
-        self.body.pop();
+        if self.grow {
+            self.grow = false;
+        } else {
+            self.body.pop();
+        }
     }
 
     pub fn set_direction(&mut self, direction: Direction) {
-        self.direction = direction;
+        if direction.opposite() != self.last_direction {
+            self.direction = direction;
+        }
+    }
+
+    pub fn eat(&mut self) {
+        self.grow = true;
     }
 }
