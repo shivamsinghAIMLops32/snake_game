@@ -1,42 +1,56 @@
-mod player;
+mod block;
+mod snake;
 
 use graphics::{clear, rectangle};
 use piston_window::*;
-use player::{Direction, Player};
+use snake::{Direction, Snake};
+
+const CELL_SIZE: f64 = 30.0;
 
 fn main() {
-    let mut player = Player::new();
+    let mut snake = Snake::new();
 
-    let mut window: PistonWindow = WindowSettings::new("Snake Game", [600, 600])
-        .exit_on_esc(true)
-        .build()
-        .unwrap();
+    let mut window: PistonWindow =
+        WindowSettings::new("Snake Game", [600, 600])
+            .exit_on_esc(true)
+            .build()
+            .unwrap();
 
     while let Some(event) = window.next() {
-        // Game update
+
+        // Keyboard Input
         if let Some(Button::Keyboard(key)) = event.press_args() {
             match key {
-                Key::Up => player.set_direction(Direction::Up),
-                Key::Down => player.set_direction(Direction::Down),
-                Key::Left => player.set_direction(Direction::Left),
-                Key::Right => player.set_direction(Direction::Right),
+                Key::Up => snake.set_direction(Direction::Up),
+                Key::Down => snake.set_direction(Direction::Down),
+                Key::Left => snake.set_direction(Direction::Left),
+                Key::Right => snake.set_direction(Direction::Right),
                 _ => {}
             }
         }
+
+        // Game Update
         if event.update_args().is_some() {
-            player.update();
+            snake.update();
         }
 
-        // Draw
+        // Render
         window.draw_2d(&event, |c, g, _| {
             clear([0.0, 0.0, 0.0, 1.0], g);
 
-            rectangle(
-                [0.0, 1.0, 0.0, 1.0],
-                [player.x, player.y, 50.0, 50.0],
-                c.transform,
-                g,
-            );
+            for block in &snake.body {
+                rectangle(
+                    [0.0, 1.0, 0.0, 1.0],
+                    [
+                        block.x as f64 * CELL_SIZE,
+                        block.y as f64 * CELL_SIZE,
+                        CELL_SIZE,
+                        CELL_SIZE,
+                    ],
+                    c.transform,
+                    g,
+                );
+            }
         });
     }
 }
